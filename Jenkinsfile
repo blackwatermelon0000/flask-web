@@ -78,7 +78,7 @@ pipeline {
             emailext(
                 subject: "SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 body: "All Selenium tests passed.\nBuild URL: ${env.BUILD_URL}",
-                to: 'YOUR_OWN_EMAIL@gmail.com'   // <-- PUT YOUR OWN EMAIL HERE
+                to: 'amauua587453@gmail.com'   
             )
         }
         failure {
@@ -86,7 +86,7 @@ pipeline {
             emailext(
                 subject: "FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 body: "Build failed.\nCheck logs: ${env.BUILD_URL}",
-                to: 'YOUR_OWN_EMAIL@gmail.com'   // <-- PUT YOUR OWN EMAIL HERE
+                to: 'amauua587453@gmail.com'   
             )
         }
     }
