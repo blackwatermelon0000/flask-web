@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}StudentMS{% endblock %}
+{% block content %}
+<section class="hero">
+    <h1>Student records, organized with calm clarity.</h1>
+    <p>Build a focused workspace for student data with clean dashboards, fast search, and simple updates that keep your roster current.</p>
+    <div class="hero-actions">
+        <a href="{{ url_for('register') }}" class="btn btn-primary">Get Started</a>
+        <a href="{{ url_for('login') }}" class="btn btn-secondary">Log In</a>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-ghost">View Dashboard</a>
+    </div>
+</section>
+{% endblock %}

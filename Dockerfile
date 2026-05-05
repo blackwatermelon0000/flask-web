@@ -24,7 +24,7 @@ WORKDIR /app
 COPY . .
 
 # Install Python deps
-RUN pip install --no-cache-dir flask selenium==4.18.1
+RUN pip install --no-cache-dir -r requirements.txt -r requirements-test.txt
 
 # Expose the port
 EXPOSE 5000

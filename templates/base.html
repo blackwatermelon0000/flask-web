@@ -7,27 +7,32 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <nav class="navbar">
-        <a href="{{ url_for('index') }}" class="brand">StudentMS</a>
-        <div class="nav-links">
-            {% if session.get('username') %}
-                <span>Hello, {{ session['username'] }}</span>
-                <a href="{{ url_for('dashboard') }}">Dashboard</a>
-                <a href="{{ url_for('add_student') }}">Add Student</a>
-                <a href="{{ url_for('logout') }}">Logout</a>
-            {% else %}
-                <a href="{{ url_for('login') }}">Login</a>
-                <a href="{{ url_for('register') }}">Register</a>
-            {% endif %}
-        </div>
-    </nav>
-    <div class="container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endwith %}
-        {% block content %}{% endblock %}
+    <div class="page">
+        <nav class="navbar">
+            <a href="{{ url_for('index') }}" class="brand">StudentMS</a>
+            <div class="nav-links">
+                {% if session.get('username') %}
+                    <span class="nav-user">Hello, {{ session['username'] }}</span>
+                    <a href="{{ url_for('dashboard') }}">Dashboard</a>
+                    <a href="{{ url_for('add_student') }}">Add Student</a>
+                    <a href="{{ url_for('logout') }}">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}">Login</a>
+                    <a href="{{ url_for('register') }}">Register</a>
+                {% endif %}
+            </div>
+        </nav>
+        <main class="container fade-in">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endwith %}
+            {% block content %}{% endblock %}
+        </main>
+        <footer class="footer">
+            StudentMS • Organize students with clarity and care.
+        </footer>
     </div>
 </body>
 </html>

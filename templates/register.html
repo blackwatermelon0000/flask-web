@@ -3,6 +3,7 @@
 {% block content %}
 <div class="form-container">
     <h2>Create Account</h2>
+    <p>Set up your profile once and start tracking students in minutes.</p>
     <form method="POST" action="{{ url_for('register') }}">
         <div class="form-group">
             <label for="username">Username</label>
@@ -20,7 +21,10 @@
             <label for="confirm_password">Confirm Password</label>
             <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm password" required>
         </div>
-        <button type="submit" class="btn btn-primary" id="register-btn">Register</button>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="register-btn">Register</button>
+            <a href="{{ url_for('login') }}" class="btn btn-ghost">Back to login</a>
+        </div>
     </form>
     <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
 </div>

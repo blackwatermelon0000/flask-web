@@ -46,6 +46,7 @@ pipeline {
                     docker run --rm \
                         --name selenium-tests \
                         --network host \
+                        -e BASE_URL=http://localhost:${APP_PORT} \
                         -v $(pwd)/test-results:/app/test-results \
                         ${DOCKER_IMG} \
                         python -m pytest tests/test_student_app.py \
@@ -74,9 +75,9 @@ pipeline {
 
     post {
         success {
-            echo '✅ All tests passed!'
+            echo 'All tests passed.'
             emailext(
-                subject: "✅ BUILD SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                subject: "BUILD SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 body: """
                     Build: ${env.BUILD_NUMBER}
                     Status: SUCCESS
@@ -87,9 +88,9 @@ pipeline {
             )
         }
         failure {
-            echo '❌ Build/Tests failed!'
+            echo 'Build or tests failed.'
             emailext(
-                subject: "❌ BUILD FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                subject: "BUILD FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 body: """
                     Build: ${env.BUILD_NUMBER}
                     Status: FAILED

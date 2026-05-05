@@ -3,6 +3,7 @@
 {% block content %}
 <div class="form-container">
     <h2>Add New Student</h2>
+    <p>Capture the essentials to keep every record complete and searchable.</p>
     <form method="POST" action="{{ url_for('add_student') }}">
         <div class="form-group">
             <label for="name">Full Name</label>
@@ -20,8 +21,10 @@
             <label for="course">Course</label>
             <input type="text" id="course" name="course" placeholder="e.g. Computer Science" required>
         </div>
-        <button type="submit" class="btn btn-primary" id="submit-student-btn">Add Student</button>
-        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="submit-student-btn">Add Student</button>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-ghost">Cancel</a>
+        </div>
     </form>
 </div>
 {% endblock %}

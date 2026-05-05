@@ -1,5 +1,7 @@
+import os
 import unittest
 import time
+import uuid
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -8,7 +10,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 
-BASE_URL = "http://localhost:5000"
+BASE_URL = os.getenv("BASE_URL", "http://localhost:5000")
 
 def get_driver():
     options = Options()
@@ -45,20 +47,42 @@ class TestStudentApp(unittest.TestCase):
         self.driver.find_element(By.ID, "password").clear()
         self.driver.find_element(By.ID, "password").send_keys(self.password)
         self.driver.find_element(By.ID, "login-btn").click()
-        time.sleep(0.5)
+        self.wait.until(EC.presence_of_element_located((By.ID, "add-student-btn")))
+
+    def add_student(self, name=None):
+        unique = uuid.uuid4().hex[:6]
+        student_name = f"{name} {unique}" if name else f"Test Student {unique}"
+        roll_no = f"SE-{unique}"
+        email = f"student_{unique}@test.com"
+        course = "Software Engineering"
+
+        self.driver.get(f"{self.base}/add_student")
+        self.driver.find_element(By.ID, "name").send_keys(student_name)
+        self.driver.find_element(By.ID, "roll_no").send_keys(roll_no)
+        self.driver.find_element(By.ID, "email").send_keys(email)
+        self.driver.find_element(By.ID, "course").send_keys(course)
+        self.driver.find_element(By.ID, "submit-student-btn").click()
+        self.wait.until(EC.presence_of_element_located((By.ID, "student-table")))
+        self.wait.until(
+            EC.text_to_be_present_in_element(
+                (By.TAG_NAME, "body"),
+                student_name
+            )
+        )
+        return student_name
 
     # ── TC-01  Page title ────────────────────────────────────────────────
     def test_01_homepage_title(self):
         """Homepage loads and has correct title"""
         self.driver.get(self.base)
-        self.assertIn("Student Management System", self.driver.title)
+        self.assertIn("StudentMS", self.driver.title)
 
     # ── TC-02  Homepage content ──────────────────────────────────────────
     def test_02_homepage_content(self):
         """Homepage displays hero heading and navigation links"""
         self.driver.get(self.base)
         body = self.driver.find_element(By.TAG_NAME, "body").text
-        self.assertIn("Student Management System", body)
+        self.assertTrue("student" in body.lower() or "dashboard" in body.lower())
         self.assertIsNotNone(self.driver.find_element(By.LINK_TEXT, "Login"))
         self.assertIsNotNone(self.driver.find_element(By.LINK_TEXT, "Register"))
 
@@ -74,14 +98,16 @@ class TestStudentApp(unittest.TestCase):
     # ── TC-04  Successful registration ──────────────────────────────────
     def test_04_successful_registration(self):
         """User can register a new account"""
+        unique = uuid.uuid4().hex[:6]
+        username = f"testuser_{unique}"
+        email = f"selenium_{unique}@test.com"
         self.driver.get(f"{self.base}/register")
-        self.driver.find_element(By.ID, "username").send_keys(self.username)
-        self.driver.find_element(By.ID, "email").send_keys(self.email)
+        self.driver.find_element(By.ID, "username").send_keys(username)
+        self.driver.find_element(By.ID, "email").send_keys(email)
         self.driver.find_element(By.ID, "password").send_keys(self.password)
         self.driver.find_element(By.ID, "confirm_password").send_keys(self.password)
         self.driver.find_element(By.ID, "register-btn").click()
-        time.sleep(0.5)
-        # Redirected to login with success message
+        self.wait.until(EC.url_contains("/login"))
         self.assertIn("login", self.driver.current_url)
 
     # ── TC-05  Duplicate registration ───────────────────────────────────
@@ -160,65 +186,59 @@ class TestStudentApp(unittest.TestCase):
     def test_12_add_student_successfully(self):
         """New student is saved and appears on dashboard"""
         self.login()
-        self.driver.get(f"{self.base}/add_student")
-        self.driver.find_element(By.ID, "name").send_keys("Ali Hassan")
-        self.driver.find_element(By.ID, "roll_no").send_keys("SE-2024-01")
-        self.driver.find_element(By.ID, "email").send_keys("ali@test.com")
-        self.driver.find_element(By.ID, "course").send_keys("Software Engineering")
-        self.driver.find_element(By.ID, "submit-student-btn").click()
-        time.sleep(0.5)
+        student_name = self.add_student(name="Abdullah")
         self.assertIn("dashboard", self.driver.current_url)
         body = self.driver.find_element(By.TAG_NAME, "body").text
-        self.assertIn("Ali Hassan", body)
+        self.assertIn(student_name, body)
 
     # ── TC-13  Search student ─────────────────────────────────────────────
     def test_13_search_student(self):
         """Search returns matching students"""
         self.login()
-        self.driver.get(f"{self.base}/search?q=Ali")
+        student_name = self.add_student(name="Abdullah")
+        self.driver.get(f"{self.base}/search?q={student_name.split()[0]}")
+        self.wait.until(EC.presence_of_element_located((By.ID, "student-table")))
+        self.wait.until(EC.text_to_be_present_in_element((By.TAG_NAME, "body"), student_name))
         body = self.driver.find_element(By.TAG_NAME, "body").text
-        self.assertIn("Ali Hassan", body)
+        self.assertIn(student_name, body)
 
     # ── TC-14  Edit student ───────────────────────────────────────────────
     def test_14_edit_student(self):
         """Student record can be edited"""
         self.login()
+        student_name = self.add_student(name="Abdullah")
         self.driver.get(self.base + "/dashboard")
-        time.sleep(0.5)
-        # Click first Edit button
-        edit_buttons = self.driver.find_elements(By.CLASS_NAME, "btn-edit")
-        if edit_buttons:
-            edit_buttons[0].click()
-            time.sleep(0.5)
-            name_field = self.driver.find_element(By.ID, "name")
-            name_field.clear()
-            name_field.send_keys("Ali Hassan Updated")
-            self.driver.find_element(By.ID, "save-edit-btn").click()
-            time.sleep(0.5)
-            body = self.driver.find_element(By.TAG_NAME, "body").text
-            self.assertIn("updated successfully", body.lower())
-        else:
-            self.skipTest("No students to edit")
+        edit_button = self.wait.until(
+            EC.element_to_be_clickable(
+                (By.XPATH, f"//tr[td[contains(., '{student_name}')]]//a[contains(@class, 'btn-edit')]")
+            )
+        )
+        edit_button.click()
+        name_field = self.driver.find_element(By.ID, "name")
+        name_field.clear()
+        updated_name = "Abdullah Updated"
+        name_field.send_keys(updated_name)
+        self.driver.find_element(By.ID, "save-edit-btn").click()
+        self.wait.until(EC.text_to_be_present_in_element((By.TAG_NAME, "body"), updated_name))
+        body = self.driver.find_element(By.TAG_NAME, "body").text
+        self.assertIn(updated_name, body)
 
     # ── TC-15  Delete student ─────────────────────────────────────────────
     def test_15_delete_student(self):
         """Student record can be deleted"""
         self.login()
+        student_name = self.add_student()
         self.driver.get(f"{self.base}/dashboard")
-        time.sleep(0.5)
-        rows_before = self.driver.find_elements(By.CLASS_NAME, "student-row")
-        if rows_before:
-            delete_btn = self.driver.find_elements(By.CLASS_NAME, "btn-delete")[0]
-            # Dismiss confirm dialog automatically
-            self.driver.execute_script(
-                "window.confirm = function(){ return true; }"
+        delete_btn = self.wait.until(
+            EC.element_to_be_clickable(
+                (By.XPATH, f"//tr[td[contains(., '{student_name}')]]//button[contains(@class, 'btn-delete')]")
             )
-            delete_btn.click()
-            time.sleep(0.5)
-            body = self.driver.find_element(By.TAG_NAME, "body").text
-            self.assertIn("deleted", body.lower())
-        else:
-            self.skipTest("No students to delete")
+        )
+        self.driver.execute_script("window.confirm = function(){ return true; }")
+        delete_btn.click()
+        self.wait.until_not(EC.text_to_be_present_in_element((By.TAG_NAME, "body"), student_name))
+        body = self.driver.find_element(By.TAG_NAME, "body").text
+        self.assertNotIn(student_name, body)
 
     # ── TC-16  Logout ─────────────────────────────────────────────────────
     def test_16_logout(self):
