@@ -1,34 +1,34 @@
 FROM python:3.11-slim
 
-# Install Chrome and ChromeDriver
+# Install Chrome — pipe key directly, no /dev/tty needed
 RUN apt-get update && apt-get install -y \
-     wget curl unzip gnupg ca-certificates \
-     && install -m 0755 -d /etc/apt/keyrings \
-     && wget -q -O /etc/apt/keyrings/google-linux.gpg https://dl.google.com/linux/linux_signing_key.pub \
-     && gpg --dearmor -o /etc/apt/keyrings/google-linux.gpg /etc/apt/keyrings/google-linux.gpg \
-     && echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-linux.gpg] http://dl.google.com/linux/chrome/deb/ stable main" \
-         > /etc/apt/sources.list.d/google-chrome.list \
-     && apt-get update \
-     && apt-get install -y google-chrome-stable \
-     && apt-get clean
+        wget gnupg ca-certificates \
+    && wget -q -O - https://dl.google.com/linux/linux_signing_key.pub \
+       | gpg --dearmor > /usr/share/keyrings/google-chrome.gpg \
+    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] \
+       http://dl.google.com/linux/chrome/deb/ stable main" \
+       > /etc/apt/sources.list.d/google-chrome.list \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install matching ChromeDriver
-RUN CHROME_VERSION=$(google-chrome --version | sed 's/Google Chrome //') \
-    && DRIVER_VERSION=$(curl -sS "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$(echo $CHROME_VERSION | cut -d. -f1)") \
-    && wget -q "https://chromedriver.storage.googleapis.com/${DRIVER_VERSION}/chromedriver_linux64.zip" \
-    && unzip chromedriver_linux64.zip -d /usr/local/bin/ \
+# Install ChromeDriver that matches Chrome
+RUN CHROME_VER=$(google-chrome --version | grep -oP '\d+' | head -1) \
+    && wget -q "https://storage.googleapis.com/chrome-for-testing-public/${CHROME_VER}.0.0.0/linux64/chromedriver-linux64.zip" \
+       -O /tmp/chromedriver.zip \
+    || wget -q "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_VER}" -O /tmp/cdver \
+    && CDVER=$(cat /tmp/cdver 2>/dev/null || echo "") \
+    && wget -q "https://chromedriver.storage.googleapis.com/${CDVER}/chromedriver_linux64.zip" \
+       -O /tmp/chromedriver.zip \
+    && unzip -o /tmp/chromedriver.zip -d /tmp/ \
+    && find /tmp -name "chromedriver" -exec mv {} /usr/local/bin/chromedriver \; \
     && chmod +x /usr/local/bin/chromedriver \
-    && rm chromedriver_linux64.zip
+    && rm -rf /tmp/chromedriver*
 
 WORKDIR /app
-
-# Copy everything
 COPY . .
 
-# Install Python deps
-RUN pip install --no-cache-dir -r requirements.txt -r requirements-test.txt
+RUN pip install --no-cache-dir flask selenium==4.18.1 pytest
 
-# Expose the port
 EXPOSE 5000
-
 CMD ["bash"]
