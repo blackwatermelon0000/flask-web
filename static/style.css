@@ -1,0 +1,43 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: Arial, sans-serif; background: #f5f6fa; color: #333; }
+.navbar { background: #2c3e50; padding: 12px 24px; display: flex;
+          justify-content: space-between; align-items: center; }
+.brand { color: #fff; font-size: 20px; font-weight: bold; text-decoration: none; }
+.nav-links a, .nav-links span { color: #ecf0f1; margin-left: 16px;
+                                 text-decoration: none; font-size: 14px; }
+.nav-links a:hover { color: #3498db; }
+.container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
+.alert { padding: 10px 16px; border-radius: 6px; margin-bottom: 16px; font-size: 14px; }
+.alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.alert-error   { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+.hero { text-align: center; padding: 60px 20px; }
+.hero h1 { font-size: 36px; margin-bottom: 12px; color: #2c3e50; }
+.hero p  { font-size: 18px; color: #666; margin-bottom: 24px; }
+.btn { display: inline-block; padding: 10px 20px; border-radius: 6px;
+       text-decoration: none; font-size: 14px; cursor: pointer; border: none; margin: 4px; }
+.btn-primary  { background: #3498db; color: #fff; }
+.btn-primary:hover  { background: #2980b9; }
+.btn-secondary{ background: #95a5a6; color: #fff; }
+.btn-secondary:hover{ background: #7f8c8d; }
+.btn-edit  { background: #27ae60; color: #fff; padding: 6px 12px; font-size: 12px; }
+.btn-delete{ background: #e74c3c; color: #fff; padding: 6px 12px; font-size: 12px; }
+.form-container { background: #fff; padding: 32px; border-radius: 10px;
+                  max-width: 480px; margin: 0 auto; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.form-container h2 { margin-bottom: 24px; color: #2c3e50; }
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; margin-bottom: 6px; font-size: 14px; color: #555; }
+.form-group input { width: 100%; padding: 10px 12px; border: 1px solid #ddd;
+                    border-radius: 6px; font-size: 14px; }
+.form-group input:focus { outline: none; border-color: #3498db; }
+.form-container p { margin-top: 16px; font-size: 14px; color: #666; }
+.dashboard h2 { margin-bottom: 16px; color: #2c3e50; }
+.search-bar { margin-bottom: 16px; display: flex; gap: 8px; }
+.search-bar input { flex: 1; padding: 10px 12px; border: 1px solid #ddd;
+                    border-radius: 6px; font-size: 14px; }
+.student-table { width: 100%; border-collapse: collapse; background: #fff;
+                 border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.student-table th { background: #2c3e50; color: #fff; padding: 12px 16px;
+                    text-align: left; font-size: 14px; }
+.student-table td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+.student-table tr:hover { background: #f8f9fa; }
+.no-students { color: #888; margin-top: 20px; font-size: 15px; }

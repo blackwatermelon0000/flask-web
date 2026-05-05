@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="dashboard">
+    <h2>Student Dashboard</h2>
+    <div class="search-bar">
+        <form method="GET" action="{{ url_for('search') }}">
+            <input type="text" name="q" id="search-input" placeholder="Search by name, roll no, course..."
+                   value="{{ search_query | default('') }}">
+            <button type="submit" class="btn btn-secondary" id="search-btn">Search</button>
+        </form>
+    </div>
+    <a href="{{ url_for('add_student') }}" class="btn btn-primary" id="add-student-btn">+ Add Student</a>
+    {% if students %}
+    <table class="student-table" id="student-table">
+        <thead>
+            <tr>
+                <th>Name</th><th>Roll No</th><th>Email</th><th>Course</th><th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students %}
+            <tr class="student-row">
+                <td class="student-name">{{ student.name }}</td>
+                <td>{{ student.roll_no }}</td>
+                <td>{{ student.email }}</td>
+                <td>{{ student.course }}</td>
+                <td>
+                    <a href="{{ url_for('edit_student', student_id=student.id) }}"
+                       class="btn btn-edit">Edit</a>
+                    <form method="POST"
+                          action="{{ url_for('delete_student', student_id=student.id) }}"
+                          style="display:inline;"
+                          onsubmit="return confirm('Are you sure?')">
+                        <button type="submit" class="btn btn-delete">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="no-students" id="no-students-msg">No students found.</p>
+    {% endif %}
+</div>
+{% endblock %}
