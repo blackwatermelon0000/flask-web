@@ -10,7 +10,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 
-BASE_URL = os.getenv("BASE_URL", "http://localhost:5000")
+BASE_URL = os.environ.get("BASE_URL", "http://localhost:5000")
 
 def get_driver():
     options = Options()
