@@ -1,6 +1,10 @@
 pipeline {
     agent any
     
+    triggers {
+        githubPush()        // This enables automatic trigger on GitHub push
+    }
+    
     environment {
         DOCKER_IMAGE = 'student-app-test'
         CONTAINER_NAME = 'student-app'
@@ -49,8 +53,8 @@ pipeline {
             post {
                 always {
                     archiveArtifacts artifacts: 'test-results/**', allowEmptyArchive: true
-                    junit testResults: 'test-results/results.xml', 
-                          allowEmptyResults: true, 
+                    junit testResults: 'test-results/results.xml',
+                          allowEmptyResults: true,
                           skipPublishingChecks: true
                 }
             }
