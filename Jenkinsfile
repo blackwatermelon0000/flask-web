@@ -2,7 +2,7 @@ pipeline {
     agent any
     
     triggers {
-        githubPush()        // This enables automatic trigger on GitHub push
+        githubPush()
     }
     
     environment {
@@ -30,7 +30,12 @@ pipeline {
                 echo '=== Starting Flask application ==='
                 sh '''
                     docker rm -f ${CONTAINER_NAME} || true
-                    docker run -d --name ${CONTAINER_NAME} -p 5000:5000 ${DOCKER_IMAGE} python3 app.py
+                    docker run -d \
+                        --name ${CONTAINER_NAME} \
+                        --restart always \
+                        -p 5000:5000 \
+                        ${DOCKER_IMAGE} \
+                        python3 app.py
                 '''
                 echo 'Waiting for app to be ready...'
                 sleep 10
@@ -42,12 +47,14 @@ pipeline {
                 echo '=== Running Selenium test cases ==='
                 sh '''
                     mkdir -p test-results
-                    docker run --rm --name selenium-tests \
+                    docker run --rm \
                         --network host \
-                        -v $(pwd)/test-results:/app/test-results \
                         -e BASE_URL=http://localhost:5000 \
+                        -v $(pwd)/test-results:/app/test-results \
                         ${DOCKER_IMAGE} \
-                        python -m pytest tests/test_student_app.py -v --junit-xml=/app/test-results/results.xml
+                        python -m pytest tests/test_student_app.py \
+                            -v \
+                            --junit-xml=/app/test-results/results.xml
                 '''
             }
             post {
@@ -63,30 +70,36 @@ pipeline {
     
     post {
         always {
-            echo '=== Cleaning up ==='
-            sh '''
-                docker rm -f ${CONTAINER_NAME} || true
-                docker rm -f selenium-tests || true
-            '''
-            
-            // Email Notification
-            emailext (
-                subject: "${currentBuild.result ?: 'SUCCESS'} - Flask Student App Pipeline #${currentBuild.number}",
-                body: '''
-                    <h2>Pipeline Build ${currentBuild.result}</h2>
-                    <p><b>Job:</b> ${JOB_NAME}</p>
-                    <p><b>Build Number:</b> #${BUILD_NUMBER}</p>
-                    <p><b>Check Console Output:</b> <a href="${BUILD_URL}">${BUILD_URL}</a></p>
-                    <p><b>Git Commit:</b> ${GIT_COMMIT}</p>
-                ''',
-                to: 'amauua587453@gmail.com',
-                attachLog: true,
-                compressLog: true
-            )
+            script {
+                // Get email of whoever pushed
+                def pusherEmail = sh(
+                    returnStdout: true,
+                    script: "git log -1 --pretty=format:'%ae'"
+                ).trim()
+
+                echo "Sending email to: ${pusherEmail} and teacher"
+
+                emailext(
+                    subject: "${currentBuild.result ?: 'SUCCESS'} - Flask Student App Pipeline #${currentBuild.number}",
+                    body: """
+                        <h2>Pipeline Result: ${currentBuild.result ?: 'SUCCESS'}</h2>
+                        <p><b>Job:</b> ${env.JOB_NAME}</p>
+                        <p><b>Build Number:</b> #${env.BUILD_NUMBER}</p>
+                        <p><b>Triggered by:</b> ${pusherEmail}</p>
+                        <p><b>Build URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+                        <p><b>Git Commit:</b> ${env.GIT_COMMIT}</p>
+                        <p><b>App URL:</b> <a href="http://13.51.44.221:5000">http://13.51.44.221:5000</a></p>
+                    """,
+                    to: "${pusherEmail}, qasimalik@gmail.com",
+                    mimeType: 'text/html',
+                    attachLog: true,
+                    compressLog: true
+                )
+            }
         }
         
         success {
-            echo 'Build and Tests Passed Successfully!'
+            echo 'Build and Tests Passed Successfully! App is running at http://13.51.44.221:5000'
         }
         
         failure {
